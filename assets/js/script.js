@@ -1,6 +1,8 @@
 var formEl = document.querySelector("#task-form");
 var pageContentEl = document.querySelector("#page-content");
 var tasksToDoEl = document.querySelector("#tasks-to-do");
+var tasksInProgressEl = document.querySelector("#tasks-in-progress");
+var tasksCompletedEl = document.querySelector("#tasks-completed");
 var taskIdCounter = 0;
 
 var taskFormHandler = function() {
@@ -13,12 +15,20 @@ var taskFormHandler = function() {
         return false;
     }
 
-    var taskDataObj = {
-        name: taskNameInput,
-        type: taskTypeInput
-    };
+    var isEdit = formEl.hasAttribute("data-task-id");
 
-    createTaskEl(taskDataObj);
+    if (isEdit) {
+        var taskId = formEl.getAttribute("data-task-id");
+        completeEditTask(taskNameInput, taskTypeInput, taskId);
+    } else {
+        var taskDataObj = {
+            name: taskNameInput,
+            type: taskTypeInput
+        };
+    
+        createTaskEl(taskDataObj);
+    }
+
     formEl.reset();
 }
 
@@ -85,9 +95,37 @@ var deleteTask = function(taskId){
     taskSelected.remove();
 }
 
+var editTask = function(taskId){
+    var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+    var taskName = taskSelected.querySelector("h3.task-name").textContent;
+    var taskType = taskSelected.querySelector("span.task-type").textContent;
+
+    document.querySelector("input[name='task-name']").value = taskName;
+    document.querySelector("select[name='task-type'").value = taskType;
+    document.querySelector("#save-task").textContent = "Save Task";
+
+    formEl.setAttribute("data-task-id", taskId);
+}
+
+var completeEditTask = function(taskName, taskType, taskId){
+    taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+    taskSelected.querySelector("h3.task-name").textContent = taskName;
+    taskSelected.querySelector("span.task-type").textContent = taskType;
+
+    alert("Task Updated!");
+
+    formEl.removeAttribute("data-task-id");
+    document.querySelector("#save-task").textContent = "Add Task";
+}
+
 formEl.addEventListener("submit", taskFormHandler);
 
 var taskButtonhandler = function(event){
+
+    if (event.target.matches(".edit-btn")){
+        var taskId = event.target.getAttribute("data-task-id");
+        editTask(taskId);
+    }
 
     if (event.target.matches(".delete-btn")){
         var taskId = event.target.getAttribute("data-task-id");
@@ -95,4 +133,22 @@ var taskButtonhandler = function(event){
     }
 }
 
+var taskStatusChangeHandler = function(event){
+    var taskId = event.target.getAttribute("data-task-id");
+    var statusValue = event.target.value.toLowerCase();
+    var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+
+    console.log(statusValue);
+    if (statusValue === "to do"){
+        tasksToDoEl.appendChild(taskSelected);
+    }
+    else if (statusValue === "in progress"){
+        tasksInProgressEl.appendChild(taskSelected);
+    }
+    else{
+        tasksCompletedEl.appendChild(taskSelected);
+    }
+}
+
+pageContentEl.addEventListener("change", taskStatusChangeHandler);
 pageContentEl.addEventListener("click", taskButtonhandler);
