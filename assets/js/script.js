@@ -162,6 +162,7 @@ var dropZoneDragHandler = function(event){
 }
 
 var dropTaskHandler = function(event){
+    event.preventDefault();
     var id = event.dataTransfer.getData("text/plain");
     var draggableElement = document.querySelector("[data-task-id='" + id + "']");
     var dropZoneElement = event.target.closest(".task-list");
